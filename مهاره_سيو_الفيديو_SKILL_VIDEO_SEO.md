@@ -1387,6 +1387,91 @@ Required Strings:
 
 ---
 
+## 🔧 APPENDIX: Helper Scripts (سكريبتات مساعدة)
+
+### Script 1: استخراج الكلمات المفتاحية من تعليقات الجمهور
+
+> **متى تستخدمه؟** عندما يريد المستخدم تحليل تعليقات جمهوره على TikTok/YouTube/Instagram لاستخراج المواضيع الأكثر طلباً.
+
+```python
+import re
+from collections import Counter
+
+def extract_keywords_from_comments(comments, language="ar"):
+    """
+    Extract most frequent keywords from audience comments.
+    Supports Arabic and English stop words.
+    """
+    clean_text = ' '.join(comments)
+    words = re.findall(r'\b\w+\b', clean_text.lower())
+
+    stop_words_ar = set(['في', 'من', 'على', 'هل', 'كيف', 'ماذا', 'و', 'أو', 'يا',
+                         'هذا', 'هذه', 'ان', 'إن', 'لا', 'ما', 'مع', 'عن', 'إلى',
+                         'بس', 'كده', 'ده', 'دي', 'اللي', 'لو', 'عشان', 'يعني'])
+    stop_words_en = set(['the', 'is', 'at', 'which', 'on', 'a', 'an', 'and', 'or',
+                         'but', 'in', 'with', 'to', 'for', 'of', 'not', 'this', 'that',
+                         'it', 'be', 'are', 'was', 'were', 'been', 'have', 'has', 'do'])
+
+    stop_words = stop_words_ar | stop_words_en
+    keywords = [w for w in words if w not in stop_words and len(w) > 2]
+    return Counter(keywords).most_common(15)
+
+# === Usage Example ===
+# comments_sample = [
+#     "كيف أزيد عضلاتي في البيت؟",
+#     "شنو أفضل بروتين للتضخيم؟",
+#     "تمارين الصدر في النادي قوية!",
+# ]
+# print(extract_keywords_from_comments(comments_sample))
+```
+
+### Script 2: توليد تقويم محتوى (Content Calendar)
+
+> **متى تستخدمه؟** بعد الانتهاء من Phase 1 (الكلمات المفتاحية) لبناء خطة نشر منظمة.
+
+```python
+import csv
+from datetime import datetime, timedelta
+
+def create_content_calendar(keywords, start_date, platform="TikTok"):
+    """
+    Generate a content calendar CSV from classified keywords.
+    Each keyword becomes a scheduled video with hook and hashtags.
+    """
+    dates = [datetime.strptime(start_date, "%Y-%m-%d") + timedelta(days=i)
+             for i in range(len(keywords))]
+
+    rows = []
+    for i, (date, kw) in enumerate(zip(dates, keywords), 1):
+        rows.append({
+            '#': i,
+            'التاريخ': date.strftime("%Y-%m-%d"),
+            'المنصة': platform,
+            'الكلمة المفتاحية': kw,
+            'فكرة الفيديو (Hook)': f"أسرار لم يخبرك بها أحد عن {kw}",
+            'نص الشاشة (Text Overlay)': f"كيف تحترف {kw} 🚀",
+            'الهاشتاجات': f"#{kw.replace(' ', '_')} #نصائح #{platform.lower()}"
+        })
+
+    filename = f"{platform.lower()}_content_calendar.csv"
+    with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
+        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"✅ Content calendar saved: {filename}")
+    print(f"📊 Total videos planned: {len(rows)}")
+    return rows
+
+# === Usage Example ===
+# keywords_list = ["تمارين مقاومة", "نظام غذائي", "أخطاء التدريب"]
+# create_content_calendar(keywords_list, "2026-10-20", platform="TikTok")
+```
+
+> **💡 ملاحظة:** هذه السكريبتات أدوات مساعدة اختيارية. يمكن للمستخدم تشغيلها محلياً أو يطلب من الـ AI تشغيلها لتحليل التعليقات أو توليد خطة النشر.
+
+---
+
 ## 🚨 FINAL RULES
 
 **🚨 RULE — RE-READ:** If the user asks you to optimize ANOTHER video in the same conversation, you MUST re-read this ENTIRE file again from the top BEFORE starting. Do NOT rely on your memory. Context drift is your enemy. Re-read, re-verify, re-deliver.
