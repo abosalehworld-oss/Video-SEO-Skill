@@ -36,6 +36,8 @@ description: >-
 | 5 | `YouTube Shorts best practices [CURRENT_YEAR]` | أفضل ممارسات شورتس |
 | 6 | `video SEO ranking factors [CURRENT_YEAR]` | عوامل ترتيب الفيديو المحدثة |
 
+**مصادر الأولوية (رسمية أولاً):** YouTube Help / YouTube Official Blog / قناة Creator Insider — TikTok Newsroom و TikTok Creator Academy — Instagram @creators وتصريحات Adam Mosseri — Google Search Central (لسيو الفيديو على جوجل). المدونات العامة = مصدر ثانوي فقط ويجب أن تذكر المصدر الرسمي. أي معلومة بدون رابط فتحته فعلاً = لا تُكتب في جدول Rule 0.
+
 > **`[CURRENT_YEAR]`** = السنة الفعلية وقت تشغيل المهاره (مثلاً 2025, 2026, 2027...).
 > **لا تكتب سنة ثابتة أبداً.** استخدم دائماً السنة الحالية من ساعة النظام.
 
@@ -79,7 +81,7 @@ description: >-
 
 **🚨 CRITICAL RULE 2: NO BLIND EXECUTION & NO SHORTCUTS.** You MUST execute every single step thoroughly AND apply its specific filtering criteria. Do not just blindly dump data. Quality over Quantity.
 
-**🚨 CRITICAL RULE 3: MANDATORY RE-READ BEFORE EVERY MODIFICATION.** Before writing or modifying ANY video deliverable (title, description, tags, script, or any output), you MUST re-read this entire SKILL file from top to bottom. Do NOT rely on memory or assumptions from earlier in the conversation. Long conversations cause context drift and forgotten steps.
+**🚨 CRITICAL RULE 3: MANDATORY RE-READ BEFORE EVERY MODIFICATION.** Before writing or modifying ANY video deliverable (title, description, tags, script, or any output), you MUST re-read the CRITICAL RULES, the Phase section for the platform you are working on, and the MANDATORY FINAL VERIFICATION (re-read the whole file for each new video or after 20+ messages). Do NOT rely on memory or assumptions from earlier in the conversation. Long conversations cause context drift and forgotten steps.
 
 **🚨 CRITICAL RULE 4: STEP-BY-STEP CHECKLIST ENFORCEMENT.** After generating any deliverable in Phase 2, you MUST run through the MANDATORY FINAL VERIFICATION (at the bottom of this file) and confirm compliance BEFORE delivering the output to the user.
 
@@ -767,7 +769,11 @@ The user will provide: the video topic/script (or a finished video) + the classi
 
 > **When to use this phase:** ONLY when the client has a website and wants to embed the video on a webpage.
 
-13. **VideoObject Schema (JSON-LD):** When embedding a YouTube video on a website page, you MUST add `VideoObject` structured data. This is MANDATORY for rich result eligibility:
+13. **VideoObject Schema (JSON-LD):** When embedding a YouTube video on a website page, add `VideoObject` structured data.
+    > ⚠️ **Google rule (verify live — see Rule 0 official sources):** video features/thumbnails in Search appear only for a **watch page** — a page whose main purpose is the single video. A blog post / product page where the video is complementary can still rank as a normal text result, but do **not** promise video rich results there. Recommend a dedicated watch page when video visibility matters.
+    > - **Required:** `name`, `thumbnailUrl`, `uploadDate` (ISO 8601 with timezone, e.g. `2026-10-20T08:00:00+02:00`).
+    > - **For YouTube embeds use `embedUrl` only.** `contentUrl` must be the actual video FILE (.mp4 etc.) — **never** a youtube.com/watch page. Omit `contentUrl` for YouTube videos.
+    > - `thumbnailUrl`: use `hqdefault.jpg` (always exists). `maxresdefault.jpg` returns 404 for many videos — only use it after opening the URL and confirming it loads.
 
     ```json
     {
@@ -775,11 +781,10 @@ The user will provide: the video topic/script (or a finished video) + the classi
       "@type": "VideoObject",
       "name": "[Video Title — same as YouTube title]",
       "description": "[Video description summary — first 2-3 sentences]",
-      "thumbnailUrl": "https://img.youtube.com/vi/[VIDEO_ID]/maxresdefault.jpg",
-      "uploadDate": "YYYY-MM-DD",
+      "thumbnailUrl": "https://i.ytimg.com/vi/[VIDEO_ID]/hqdefault.jpg",
+      "uploadDate": "YYYY-MM-DDTHH:MM:SS+00:00",
       "duration": "PT[X]M[Y]S",
       "embedUrl": "https://www.youtube.com/embed/[VIDEO_ID]",
-      "contentUrl": "https://www.youtube.com/watch?v=[VIDEO_ID]",
       "publisher": {
         "@type": "Organization",
         "name": "[Brand Name]",
@@ -809,6 +814,8 @@ The user will provide: the video topic/script (or a finished video) + the classi
 
     - **Combine with page-level Schema:** If the page already has `Product`, `Article`, or `MedicalWebPage` Schema, ADD the `VideoObject` Schema alongside it (stacked schemas).
     - **Schema-HTML Consistency:** The video MUST be visibly embedded on the page. Do NOT add VideoObject Schema without a visible video player.
+    - **Clips (`hasPart`):** `startOffset`/`endOffset` in **seconds**; each `url` is a deep link with `&t=<seconds>`; no two clips share a start time; video ≥ 30 seconds. Chapter times MUST come from the user's actual video chapters — never invented.
+    - **Validate before delivery:** tell the user to paste the page URL (or code) into Google Rich Results Test (search.google.com/test/rich-results) and report the result. Never claim "eligible for rich results" without that test.
 
 14. **Video Embed Performance (Core Web Vitals):** Video players are heavy. To protect page speed:
     - Use **lazy loading** for video embeds: `loading="lazy"` on the iframe, OR use a lightweight thumbnail placeholder that loads the full YouTube player only on click (facade pattern).
@@ -826,10 +833,10 @@ The user will provide: the video topic/script (or a finished video) + the classi
     <url>
       <loc>https://example.com/page-with-video</loc>
       <video:video>
-        <video:thumbnail_loc>https://img.youtube.com/vi/[ID]/maxresdefault.jpg</video:thumbnail_loc>
+        <video:thumbnail_loc>https://i.ytimg.com/vi/[ID]/hqdefault.jpg</video:thumbnail_loc>
         <video:title>[Video Title]</video:title>
         <video:description>[Video Description]</video:description>
-        <video:content_loc>https://www.youtube.com/watch?v=[ID]</video:content_loc>
+        <!-- YouTube: use player_loc only. content_loc must be a real media file, never a watch page -->
         <video:player_loc>https://www.youtube.com/embed/[ID]</video:player_loc>
         <video:duration>[seconds]</video:duration>
         <video:publication_date>YYYY-MM-DD</video:publication_date>
@@ -843,7 +850,8 @@ The user will provide: the video topic/script (or a finished video) + the classi
     - Apply all relevant Website SEO best practices (Definition-Lead Architecture, Fact-Dense Writing, E-E-A-T, etc.)
 
 > **⛔ CHECKPOINT D — VIDEO-WEBSITE INTEGRATION GATE:**
-> - ✅ VideoObject Schema (JSON-LD) added with all required properties?
+> - ✅ VideoObject Schema has name + thumbnailUrl + uploadDate, uses embedUrl (no watch-page contentUrl)?
+> - ✅ Told the user whether the page is a real watch page (video = main content) — no false rich-result promise?
 > - ✅ Schema matches visible embedded video on page?
 > - ✅ Video embed uses lazy loading or facade pattern (unless hero video)?
 > - ✅ iframe has explicit width and height?
@@ -1448,8 +1456,8 @@ def create_content_calendar(keywords, start_date, platform="TikTok"):
             'التاريخ': date.strftime("%Y-%m-%d"),
             'المنصة': platform,
             'الكلمة المفتاحية': kw,
-            'فكرة الفيديو (Hook)': f"أسرار لم يخبرك بها أحد عن {kw}",
-            'نص الشاشة (Text Overlay)': f"كيف تحترف {kw} 🚀",
+            'فكرة الفيديو (Hook)': "[اكتب Hook من Hook Formulas يطابق محتوى الفيديو فعلاً]",
+            'نص الشاشة (Text Overlay)': "[نص قصير يطابق الوعد في العنوان]",
             'الهاشتاجات': f"#{kw.replace(' ', '_')} #نصائح #{platform.lower()}"
         })
 
